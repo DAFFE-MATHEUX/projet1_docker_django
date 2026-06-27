@@ -1,0 +1,279 @@
+
+============================================================================================
+	COURS DE DOCKER
+============================================================================================
+
+
+Introduction : Pourquoi Docker et le DevOps sont-ils Indissociables ?
+Aujourd'hui, il est impossible de parler de DevOps, d'administration système ou de développement 
+agile sans évoquer la conteneurisation. Docker est devenu un standard dans les environnements modernes d'infrastructure et de développement, car il permet de standardiser le déploiement d'applications et de simplifier leur exploitation.
+
+La promesse de Docker est de résoudre le fameux problème : "Ça marche sur ma machine, mais pas en production". En encapsulant une application et toutes ses dépendances dans un conteneur, on garantit un comportement identique quel que soit l'environnement d'exécution .
+
+
+Ce cours est conçu pour vous faire passer du statut de débutant à celui d'un professionnel capable de déployer des architectures conteneurisées résilientes en production, en phase avec la culture DevOps .
+
+Prérequis recommandés :
+
+Bases de Linux (savoir utiliser le shell et la ligne de commande) .
+
+Compréhension des concepts de système d'exploitation et de virtualisation .
+
+
+Partie 1 : Fondamentaux de la Conteneurisation
+1.1 Introduction à la Conteneurisation et à Docker
+
+Objectif : Comprendre le "pourquoi" et le "comment" de Docker.
+
+Concepts clés :
+
+a. Virtualisation vs Conteneurisation : Une machine virtuelle (VM) émule un hardware complet et inclut son propre système d'exploitation, ce qui la rend lourde et plus lente. Un conteneur, en revanche, virtualise le système d'exploitation. Il utilise le noyau de l'hôte et isole les processus via des mécanismes du noyau Linux, ce qui le rend léger, rapide et efficace en ressources 
+
+b.Les Mécanismes Linux (Namespaces & Cgroups) : Derrière Docker, ce sont les technologies Linux qui font le travail lourd. Les namespaces isolent les ressources (processus, réseau, utilisateurs), et les cgroups limitent l'utilisation des ressources (CPU, RAM) pour chaque conteneur .
+
+c.Écosystème Docker : Un conteneur est une instance d'une image. L'image est un modèle en lecture seule qui contient le code, les bibliothèques et les configurations nécessaires pour exécuter une application. Les registres (comme Docker Hub) sont des dépôts où l'on stocke et partage ces images .
+
+1.2 Installation et Premier Conteneur
+Objectif : Installer Docker et lancer son premier conteneur.
+
+Étapes :
+
+1. Installation de Docker Engine : Suivez la documentation officielle pour installer Docker sur votre distribution Linux préférée. Sur Windows et macOS, Docker Desktop est l'option recommandée .
+sudo apt update
+sudo apt upgrade && sudo apt install docker.io -y
+2. Première commande :
+
+docker run hello-world
+
+Cette commande télécharge l'image hello-world depuis Docker Hub et exécute un conteneur qui affiche un message de succès.
+
+3. Comprendre la commande docker run : C'est la commande centrale. Elle permet de créer et de démarrer un nouveau conteneur à partir d'une image. Plus tard, nous ajouterons des options pour ouvrir des ports, monter des volumes, etc. .
+
+Exercice Partie 1 :
+
+a. Installez Docker sur votre machine (ou utilisez un environnement de test comme Play with Docker).
+
+b. Lancez un conteneur Ubuntu interactif avec la commande : docker run -it ubuntu bash.
+
+c. À l'intérieur du conteneur, exécutez quelques commandes Linux (ls, cat /etc/os-release) puis tapez exit pour quitter.
+
+d. Listez tous les conteneurs, y compris ceux qui sont arrêtés : docker ps -a.
+
+
+Partie 2 : Gestion des Images et Conteneurs
+2.1 Travailler avec les Images Docker
+Objectif : Maîtriser le cycle de vie des images.
+
+Commandes clés :
+
+docker pull <image>:<tag> : Télécharger une image depuis un registre.
+
+docker images : Lister les images présentes localement.
+
+docker rmi <image_id> : Supprimer une image locale.
+
+docker tag <image_id> <new_name>:<tag> : Créer un alias pour une image.
+
+docker push <image_name> : Pousser une image vers un registre .
+
+2.2 Construction d'Images Personnalisées avec Dockerfile
+Objectif : Automatiser la construction d'images.
+
+Un Dockerfile est un fichier texte qui contient toutes les instructions pour construire une image. C'est le cœur de l'industrialisation .
+
+Structure d'un Dockerfile :
+
+FROM <image_de_base> : Spécifie l'image de départ (ex: FROM node:18-alpine).
+
+WORKDIR /app : Définit le répertoire de travail à l'intérieur du conteneur.
+
+COPY . . : Copie les fichiers du contexte de build (votre projet) dans le conteneur.
+
+RUN npm install : Exécute une commande pendant la construction.
+
+EXPOSE 3000 : Indique le port que l'application utilisera (documentation).
+
+CMD ["npm", "start"] : Définit la commande à exécuter quand le conteneur démarre .
+
+Bonnes pratiques :
+
+Optimiser le cache : Copiez les fichiers de dépendances (ex: package.json) avant le code source pour que l'étape RUN npm install soit mise en cache et ne soit pas ré-exécutée si vous ne changez que votre code source.
+
+Images minimales : Utilisez des images de base -alpine pour réduire la taille et améliorer la sécurité .
+
+2.3 Le Cycle de Vie d'un Conteneur
+Objectif : Gérer les conteneurs en production.
+
+Commandes essentielles :
+
+docker run -d --name mon_app -p 8080:80 nginx : Lance un conteneur Nginx en arrière-plan (-d), le nomme "mon_app" et expose le port 80 du conteneur sur le port 8080 de l'hôte .
+
+docker ps : Voir les conteneurs en cours d'exécution.
+
+docker logs mon_app : Consulter les logs d'un conteneur.
+
+docker stop mon_app : Arrêter un conteneur gracieusement.
+
+docker rm mon_app : Supprimer un conteneur arrêté.
+
+Exercice Partie 2 :
+
+Créez un Dockerfile pour une application simple (par exemple, une page HTML servie par Nginx ou une app Node.js).
+
+Construisez l'image : docker build -t mon-app-web .
+
+Lancez un conteneur avec votre nouvelle image et exposez-la sur votre navigateur.
+
+Modifiez votre code, reconstruisez l'image et relancez un conteneur.
+
+Partie 3 : Services et Stockage
+3.1 Gestion des Volumes : Persistance des Données
+Objectif : Assurer la persistance des données générées par les conteneurs.
+
+Les conteneurs sont éphémères. Si vous supprimez un conteneur, toutes les données stockées à l'intérieur sont perdues. Les volumes permettent de stocker des données de manière persistante .
+
+Bind Mounts : Mappez un répertoire de l'hôte à un répertoire du conteneur.
+
+docker run -v /chemin/sur/hote:/chemin/dans/conteneur mon-image
+
+Docker Volumes : Gérés par Docker lui-même et stockés dans son répertoire de données.
+
+docker volume create mon_volume
+docker run -v mon_volume:/chemin/dans/conteneur mon-image
+
+3.2 Gestion des Réseaux
+Objectif : Permettre la communication entre conteneurs et avec le monde extérieur.
+
+Docker crée par défaut des réseaux virtuels. Les plus importants sont :
+
+bridge : Le réseau par défaut. Les conteneurs sur le même réseau bridge peuvent communiquer entre eux via leurs IPs ou leurs noms.
+
+host : Le conteneur utilise directement le réseau de l'hôte.
+
+overlay : Utilisé pour la communication entre les conteneurs sur différents hôtes (orchestration) .
+
+Communication : Mettre deux conteneurs sur le même réseau bridge personnalisé pour qu'ils puissent communiquer par leur nom de service.
+
+3.3 Docker Compose
+Objectif : Orchestrer des applications multi-conteneurs sur un seul hôte.
+
+Docker Compose est un outil qui permet de définir et de gérer des applications multi-conteneurs. Au lieu d'écrire de longues commandes docker run, on définit tout dans un fichier docker-compose.yaml .
+
+Structure d'un fichier docker-compose.yaml :
+
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+  redis:
+    image: "redis:alpine"
+    volumes:
+      - redis_data:/data
+volumes:
+  redis_data:
+
+Commandes :
+
+docker-compose up -d : Démarre tous les services en arrière-plan.
+
+docker-compose down : Arrête tous les services et supprime les conteneurs.
+
+Exercice Partie 3 :
+1. Créez un fichier docker-compose.yaml pour une application qui nécessite un serveur web (ex: Nginx) et une base de données (ex: PostgreSQL).
+
+2. Démarrez votre application.
+
+3. Inspectez les logs pour vous assurer que tout fonctionne.
+
+3. Utilisez les volumes pour persister les données de la base de données.
+
+Partie 4 : Sécurité et Bonnes Pratiques
+4.1 Sécurisation de Docker
+Objectif : Sécuriser l'environnement Docker et les conteneurs.
+
+Privilèges minimaux : Évitez d'exécuter les conteneurs en tant que root. Utilisez l'instruction USER dans le Dockerfile.
+
+Sécurité des images : Utilisez des images officielles et à jour. Scannez vos images pour détecter les vulnérabilités (ex: avec docker scan).
+
+Isolation : Utilisez les namespaces et les cgroups. Configurez le démon Docker pour une exécution sécurisée (ex: restrictions sur les capacités des conteneurs) .
+
+Gestion des Secrets : Dans un contexte de production, n'écrivez jamais de secrets (mots de passe, clés API) en dur dans le Dockerfile. Utilisez plutôt des variables d'environnement ou des outils de gestion de secrets (Docker Swarm, Kubernetes) .
+
+Exercice Partie 4 :
+
+1. Analysez votre Dockerfile et votre application pour identifier les utilisateurs root.
+
+2. Ajoutez un utilisateur non-root et modifiez votre Dockerfile en conséquence.
+
+3. Supprimez les conteneurs et volumes inutilisés pour nettoyer votre système : docker system prune -a.
+
+Partie 5 : Introduction à l'Orchestration et au DevOps
+Maintenir et faire évoluer une application composée de dizaines ou de centaines de conteneurs est impossible à la main. C'est là qu'interviennent l'orchestration et le DevOps .
+
+5.1 Docker Swarm
+Objectif : Découvrir l'orchestration native de Docker.
+
+Docker Swarm est un orchestrateur intégré à Docker. Il permet de créer un cluster de nœuds Docker et de déployer des services à grande échelle.
+
+a. Services : Définition de l'état souhaité pour un conteneur (combien de réplicas ?).
+
+b. Stacks : Similaire à un fichier docker-compose.yaml, mais pour un cluster Swarm.
+
+c. Scalabilité : Ajustez facilement le nombre de réplicas d'un service .
+
+5.2 Kubernetes : Le Standard de l'Orchestration
+
+Objectif : Comprendre le rôle de Kubernetes.
+
+Kubernetes (K8s) est aujourd'hui le standard de l'orchestration de conteneurs. Il est plus complexe que Swarm, mais beaucoup plus puissant et flexible .
+
+Concepts clés :
+
+- Pods : Le plus petit objet déployable, qui peut contenir un ou plusieurs conteneurs.
+
+- Services : Exposent les pods sur le réseau du cluster ou vers l'extérieur.
+
+- Deployments : Définissent l'état souhaité des pods (nombre de réplicas, stratégie de mise à jour).
+
+- Helm : Le gestionnaire de paquets pour Kubernetes, qui permet de déployer des applications complexes en utilisant des "charts" préconfigurés .
+
+5.3 Intégration de Docker dans une chaîne CI/CD
+Objectif : Automatiser le build, le test et le déploiement.
+
+C'est l'essence du DevOps. Docker est un maillon central dans une chaîne d'Intégration Continue et de Déploiement Continu (CI/CD) .
+
+Pipeline CI/CD typique :
+
+a. Code : Le développeur pousse son code sur un dépôt Git (ex: GitHub, GitLab).
+
+b. Build : Un outil d'intégration continue (Jenkins, GitHub Actions, GitLab CI) déclenche un build. Il construit l'image Docker en utilisant le Dockerfile.
+
+c. Test : L'image construite est testée (tests unitaires, d'intégration).
+
+d. Push : L'image est taguée et poussée vers un registre (Docker Hub, AWS ECR, etc.).
+
+e. Deploy : L'outil CI/CD déclenche un déploiement en production (par exemple, en mettant à jour un service dans Kubernetes en utilisant une nouvelle image) .
+
+Exercice Partie 5 (Avancé) :
+
+Utilisez Docker Compose pour définir une application web avec un backend.
+
+Utilisez un outil comme GitHub Actions pour créer un pipeline qui, à chaque push sur la branche main, construit l'image Docker, la pousse vers un registre.
+
+(Optionnel) Déployez cette application sur un cluster Kubernetes ou Swarm pour simuler un environnement de production.
+
+
+Conclusion
+Ce cours vous a guidé à travers les concepts fondamentaux de Docker, des premières commandes à l'intégration dans une stratégie DevOps. Vous avez appris à conteneuriser vos applications, gérer les données avec des volumes, orchestrer des services avec Docker Compose et préparer le terrain pour l'orchestration avancée avec Kubernetes et Swarm .
+
+La maîtrise de Docker est un pilier pour les administrateurs systèmes, les développeurs et les ingénieurs DevOps modernes. La prochaine étape naturelle est d'approfondir vos connaissances sur Kubernetes et la mise en place de pipelines CI/CD robustes pour automatiser entièrement le cycle de vie de vos applications .
+
+
+
+============================================================================================
+Fin
+============================================================================================

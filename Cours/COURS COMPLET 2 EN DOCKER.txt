@@ -1,0 +1,2798 @@
+
+============================================================================================
+	COURS COMPLET DOCKER & DEVOPS
+De l'Initiation à l'Expertise avec Exercices Pratiques
+============================================================================================
+
+TABLE DES MATIÈRES
+Partie 1 : Fondamentaux et Installation
+
+Partie 2 : Gestion des Conteneurs
+
+Partie 3 : Création d'Images avec Dockerfile
+
+Partie 4 : Docker Compose et Multi-Conteneurs
+
+Partie 5 : Volumes et Persistance des Données
+
+Partie 6 : Réseaux Docker
+
+Partie 7 : Sécurité et Bonnes Pratiques
+
+Partie 8 : Docker Swarm (Orchestration)
+
+Partie 9 : Introduction à Kubernetes
+
+Partie 10 : CI/CD et DevOps avec Docker
+
+
+***************************************************************************************************************************************************
+PARTIE 1 : FONDAMENTAUX ET INSTALLATION
+1.1 Qu'est-ce que Docker ?
+Théorie
+Docker est une plateforme de conteneurisation qui permet d'empaqueter une application avec toutes ses dépendances dans un conteneur isolé. Contrairement aux machines virtuelles, les conteneurs partagent le noyau de l'hôte, ce qui les rend légers et rapides.
+
+Concepts Clés
+
+Image : Modèle immuable contenant tout le nécessaire pour exécuter une application
+
+Conteneur : Instance exécutable d'une image
+
+Registry : Dépôt d'images (Docker Hub, AWS ECR, etc.)
+
+Docker Engine : Moteur qui gère les conteneurs
+
+Installation
+
+Sur Linux (Ubuntu/Debian) :
+***********************************************************************************************************************************
+# Mise à jour des paquets
+sudo apt update
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+
+# Ajout de la clé GPG officielle de Docker
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+# Ajout du dépôt Docker
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Installation
+sudo apt update
+sudo apt install docker-ce docker-ce-cli containerd.io
+
+# Vérification
+sudo systemctl status docker
+docker --version
+
+# Ajout de l'utilisateur au groupe docker (pour éviter sudo)
+sudo usermod -aG docker $USER
+newgrp docker
+===========================================================================================
+
+NB : Sur Windows/macOS :
+Téléchargez et installez Docker Desktop depuis le site officiel.
+
+EXERCICES PARTIE 1
+Exercice 1.1 : Vérification de l'installation
+Objectif : Confirmer que Docker est correctement installé
+
+
+# 1. Vérifier la version de Docker
+docker --version
+
+# 2. Vérifier que le daemon Docker tourne
+docker info
+
+# 3. Lancer le conteneur de test
+docker run hello-world
+
+Questions :
+
+a. Quelle version de Docker avez-vous installée ?
+
+b. Combien de conteneurs, images et volumes avez-vous actuellement ?
+
+c. Que s'est-il passé quand vous avez exécuté docker run hello-world ?
+
+Exercice 1.2 : Premier conteneur interactif
+Objectif : Lancer un conteneur Ubuntu et interagir avec
+
+===============================Réponse à l'exercice==========================================================
+
+# 1. Lancer un conteneur Ubuntu en mode interactif
+docker run -it ubuntu:22.04 bash
+
+# 2. À l'intérieur du conteneur, exécutez :
+apt update
+apt install -y vim
+echo "Hello Docker" > /tmp/test.txt
+cat /tmp/test.txt
+exit
+=========================================================================================
+
+Questions :
+
+1. Que devient le fichier /tmp/test.txt après avoir quitté le conteneur ?
+
+2. Pourquoi le conteneur s'arrête-t-il quand vous tapez exit ?
+
+Exercice 1.3 : Exploration des commandes de base
+Objectif : Maîtriser les commandes fondamentales de Docker
+============================Réponse à l'exercice============================================================
+# 1. Lister tous les conteneurs (y compris arrêtés)
+docker ps -a
+
+# 2. Lister les images
+docker images
+
+# 3. Afficher l'historique des commandes d'une image
+docker history ubuntu:22.04
+
+# 4. Rechercher une image sur Docker Hub
+docker search nginx
+
+# 5. Télécharger une image sans l'exécuter
+docker pull nginx:alpine
+
+# 6. Voir l'utilisation des ressources
+docker system df
+==========================================================================================
+
+Exercice pratique :
+
+1. Téléchargez l'image alpine:latest
+
+2. Lancez un conteneur Alpine en mode interactif
+
+3. Installez curl dans le conteneur
+
+4. Effectuez une requête HTTP vers google.com
+
+5. Quittez le conteneur
+
+6. Que constatez-vous sur l'installation de curl ?
+
+Exercice 1.4 : Nettoyage du système
+Objectif : Apprendre à gérer l'espace disque
+
+===================================Réponse à l'exercice=====================================================
+
+# 1. Nettoyer les conteneurs arrêtés
+docker container prune
+
+# 2. Nettoyer les images non utilisées
+docker image prune
+
+# 3. Nettoyer tout (conteneurs, images, réseaux, volumes)
+docker system prune -a
+
+# 4. Nettoyer les volumes
+docker volume prune
+
+======================================================================================
+
+Questions :
+
+1. Pourquoi est-il important de nettoyer régulièrement Docker ?
+
+2. Quelle commande utiliseriez-vous pour supprimer tous les conteneurs sans confirmation ?
+******************************************************************************************************************************************
+PARTIE 2 : GESTION DES CONTENEURS
+2.1 Cycle de vie des conteneurs
+Théorie
+Un conteneur passe par plusieurs états : created, running, paused, exited, dead.
+
+Commandes Essentielles
+
+Commande	Description
+docker create	Crée un conteneur sans le démarrer
+docker start	Démarre un conteneur arrêté
+docker stop	Arrête un conteneur en cours d'exécution
+docker restart	Redémarre un conteneur
+docker pause	Pause tous les processus dans un conteneur
+docker unpause	Reprend un conteneur en pause
+docker rm	Supprime un conteneur
+docker kill	Tue un conteneur (SIGKILL)
+
+EXERCICES PARTIE 2
+Exercice 2.1 : Cycle de vie complet
+Objectif : Maîtriser le cycle de vie des conteneurs
+
+================================================Réponse à l'exercices==========================================================================
+# 1. Créer un conteneur sans le démarrer
+docker create --name mon-nginx nginx:alpine
+docker ps -a
+
+# 2. Démarrer le conteneur
+docker start mon-nginx
+docker ps
+
+# 3. Arrêter le conteneur
+docker stop mon-nginx
+docker ps -a
+
+# 4. Démarrer à nouveau
+docker start mon-nginx
+
+# 5. Mettre en pause
+docker pause mon-nginx
+docker ps
+
+# 6. Reprendre
+docker unpause mon-nginx
+
+# 7. Supprimer
+docker stop mon-nginx
+docker rm mon-nginx
+
+=========================================================================================================================
+
+Questions :
+
+Quelle est la différence entre docker stop et docker kill ?
+
+Que se passe-t-il si vous essayez de supprimer un conteneur en cours d'exécution ?
+
+Exercice 2.2 : Exécution de commandes dans un conteneur
+Objectif : Exécuter des commandes dans un conteneur en cours d'exécution
+=================================================Réponse à l'exercice========================================================================
+
+# 1. Démarrer un conteneur Nginx en arrière-plan
+docker run -d --name web nginx:alpine
+
+# 2. Exécuter une commande ponctuelle
+docker exec web ls -la /usr/share/nginx/html
+
+# 3. Ouvrir un shell interactif
+docker exec -it web sh
+
+# 4. À l'intérieur du conteneur
+apk add curl
+curl localhost
+exit
+
+# 5. Voir les logs
+docker logs web
+docker logs -f web  # Suivre les logs en temps réel
+
+=========================================================================================================================
+
+Exercice pratique :
+
+1. Créez un conteneur Redis en arrière-plan
+
+2. Utilisez docker exec pour lancer le client Redis
+
+3. Ajoutez une clé monkey avec la valeur banana
+
+4. Récupérez la valeur
+
+Exercice 2.3 : Port mapping
+Objectif : Exposer des ports pour accéder aux applications
+=================================================Réponse à l'exercice========================================================================
+
+# 1. Mapper le port 80 du conteneur sur le port 8080 de l'hôte
+docker run -d --name web -p 8080:80 nginx:alpine
+
+# 2. Tester l'accès
+curl localhost:8080
+
+# 3. Mapper plusieurs ports
+docker run -d --name multi -p 8081:80 -p 8443:443 nginx:alpine
+
+# 4. Mapper sur une IP spécifique
+docker run -d --name ip-mapped -p 127.0.0.1:8082:80 nginx:alpine
+
+# 5. Mapper aléatoirement
+docker run -d --name random -P nginx:alpine
+docker port random
+=========================================================================================================================
+
+Exercice Pratique :
+
+1. Lancez un conteneur MySQL avec le port 3306 exposé
+
+2. Lancez un conteneur phpMyAdmin et connectez-le à MySQL
+
+3. Accédez à phpMyAdmin via votre navigateur
+
+Exercice 2.4 : Variables d'environnement
+Objectif : Configurer des conteneurs avec des variables d'environnement
+=================================================Réponse à l'exercice========================================================================
+# 1. Passer des variables d'environnement
+docker run -d --name mysql -e MYSQL_ROOT_PASSWORD=secret -e MYSQL_DATABASE=testdb mysql:8.0
+
+# 2. Vérifier les variables
+docker exec mysql env | grep MYSQL
+
+# 3. Utiliser un fichier .env
+echo "MYSQL_ROOT_PASSWORD=secret" > mysql.env
+echo "MYSQL_DATABASE=testdb" >> mysql.env
+docker run -d --name mysql-env --env-file mysql.env mysql:8.0
+
+# 4. Inspecter les variables
+docker inspect mysql-env | grep -A 10 Env
+
+=========================================================================================================================
+
+Exercice pratique :
+
+Lancez un conteneur WordPress
+
+Configurez-le avec les variables d'environnement suivantes :
+
+WORDPRESS_DB_HOST=db
+
+WORDPRESS_DB_USER=wordpress
+
+WORDPRESS_DB_PASSWORD=wordpress
+
+WORDPRESS_DB_NAME=wordpress
+
+Expliquez pourquoi WordPress a besoin de ces variables
+
+Exercice 2.5 : Gestion des ressources
+Objectif : Limiter les ressources des conteneurs
+=========================================================================================================================
+
+# 1. Limiter la mémoire à 512MB
+docker run -d --name limited-mem --memory="512m" nginx
+
+# 2. Limiter le CPU à 0.5 coeur
+docker run -d --name limited-cpu --cpus="0.5" nginx
+
+# 3. Combinaison de limites
+docker run -d --name limited-all --memory="256m" --cpus="0.25" nginx
+
+# 4. Voir les statistiques
+docker stats limited-all
+docker stats --no-stream limited-all
+
+# 5. Mettre à jour les limites d'un conteneur en cours d'exécution
+docker update --memory="1g" limited-mem
+
+# 1. Limiter la mémoire à 512MB
+docker run -d --name limited-mem --memory="512m" nginx
+
+# 2. Limiter le CPU à 0.5 coeur
+docker run -d --name limited-cpu --cpus="0.5" nginx
+
+# 3. Combinaison de limites
+docker run -d --name limited-all --memory="256m" --cpus="0.25" nginx
+
+# 4. Voir les statistiques
+docker stats limited-all
+docker stats --no-stream limited-all
+
+# 5. Mettre à jour les limites d'un conteneur en cours d'exécution
+docker update --memory="1g" limited-mem
+=========================================================================================================================
+
+Exercice de stress test :
+
+1. Lancez un conteneur Ubuntu
+
+2. Installez stress : apt update && apt install -y stress
+
+3. Lancez un test de charge : stress --cpu 2 --vm 2 --vm-bytes 128M
+
+4. Surveillez les ressources avec docker stats
+
+5. Limitez les ressources et observez le comportement
+**********************************************************************************************************************
+PARTIE 3 : CRÉATION D'IMAGES AVEC DOCKERFILE
+**********************************************************************************************************************
+3.1 Structure d'un Dockerfile
+Théorie
+Un Dockerfile est un fichier texte contenant les instructions pour construire une image. Chaque instruction crée une nouvelle couche dans l'image.
+
+Instructions Principales
+Instruction	Description				Exemple
+FROM		Image de base	FROM 			ubuntu:22.04
+RUN		Exécute une commande			RUN apt update && apt install -y python3
+COPY		Copie des fichiers			COPY app.py /app/
+ADD		Copie avec décompression automatique	ADD archive.tar.gz /app/
+WORKDIR		Change le répertoire de travail	WORKDIR /app
+CMD		Commande par défaut			CMD ["python3", "app.py"]
+ENTRYPOINT	Point d'entrée fixe			ENTRYPOINT ["python3"]
+EXPOSE		Port exposé				EXPOSE 8000
+ENV		Variable d'environnement		ENV DEBUG=true
+USER		Changement d'utilisateur		USER appuser
+VOLUME		Point de montage			VOLUME /data
+ARG		Variable de build			ARG VERSION=latest
+LABEL		Métadonnées				LABEL maintainer="user@mail.com"
+
+EXERCICES PARTIE 3
+Exercice 3.1 : Première image - Application Python simple
+Objectif : Créer une image Docker pour une application Python
+
+Structure du projet :
+mon-app/
+├── Dockerfile
+├── app.py
+└── requirements.txt
+
+app.py :
+
+from flask import Flask
+import os
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    return f"Hello from Docker! Hostname: {os.uname().nodename}"
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+
+requirements.txt :
+flask==2.3.2
+
+Dockerfile :
+
+# Étape 1 : Image de base
+FROM python:3.9-slim
+
+# Étape 2 : Métadonnées
+LABEL maintainer="dev@example.com"
+LABEL version="1.0"
+
+# Étape 3 : Répertoire de travail
+WORKDIR /app
+
+# Étape 4 : Copier les dépendances (optimisation du cache)
+COPY requirements.txt .
+
+# Étape 5 : Installer les dépendances
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Étape 6 : Copier le code source
+COPY app.py .
+
+# Étape 7 : Exposer le port
+EXPOSE 5000
+
+# Étape 8 : Commande par défaut
+CMD ["python", "app.py"]
+
+Build et Run :
+# Construire l'image
+docker build -t my-flask-app .
+
+# Lancer le conteneur
+docker run -d -p 5000:5000 --name flask-app my-flask-app
+
+# Tester
+curl localhost:5000
+
+# Voir les logs
+docker logs flask-app
+
+Questions :
+
+1. Pourquoi avons-nous copié requirements.txt avant app.py ?
+
+2. À quoi sert --no-cache-dir dans pip install ?
+
+3. Que se passe-t-il si on change app.py ? Et si on change requirements.txt ?
+
+Exercice 3.2 : Multi-stage builds
+
+Objectif : Réduire la taille de l'image finale
+
+Dockerfile multi-stage :
+==============================================================================================
+# Stage 1 : Build
+FROM golang:1.19-alpine AS builder
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN go build -o main .
+
+# Stage 2 : Production
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=builder /app/main .
+EXPOSE 8080
+CMD ["./main"]
+
+==============================================================================================
+
+Exercice pratique :
+
+1. Créez une application Go simple (ou utilisez le code ci-dessous)
+
+2. Implémentez un multi-stage build
+
+3. Comparez les tailles des images
+
+go.mod :
+module myapp
+
+go 1.19
+
+main.go :
+package main
+
+import (
+    "fmt"
+    "net/http"
+)
+
+func main() {
+    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        fmt.Fprintf(w, "Hello from Go!")
+    })
+    http.ListenAndServe(":8080", nil)
+}
+
+Exercice 3.3 : Optimisation des images
+Objectif : Créer des images légères et sécurisées
+==============================================================================================
+# Mauvaise pratique
+FROM ubuntu:latest
+RUN apt update && apt install -y python3 python3-pip
+COPY . /app
+WORKDIR /app
+RUN pip install -r requirements.txt
+CMD python3 app.py
+
+# Bonne pratique
+FROM python:3.9-alpine
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+RUN chown -R appuser:appgroup /app
+USER appuser
+EXPOSE 5000
+CMD ["python", "app.py"]
+
+==============================================================================================
+Exercices d'optimisation :
+
+1. Calculez la taille de l'image Ubuntu vs Alpine
+
+2. Comparez les images avec et sans multi-stage
+
+3. Utilisez docker history pour analyser les couches
+
+Exercice 3.4 : Build avec arguments
+Objectif : Paramétrer les builds
+==============================================================================================
+ARG VERSION=latest
+FROM node:${VERSION}-alpine
+
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --only=production
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+
+==============================================================================================
+Build avec arguments :
+
+# Build avec version spécifique
+docker build --build-arg VERSION=18 --build-arg NODE_ENV=development -t node-app .
+
+# Build avec valeurs par défaut
+docker build -t node-app .
+
+Exercice 3.5 : Application complète avec base de données
+Objectif : Créer une application full-stack
+
+docker-compose.yml :
+==============================================================================================
+version: '3.8'
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apppassword
+      POSTGRES_DB: appdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://appuser:apppassword@db/appdb
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+  
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+
+volumes:
+  postgres_data:
+
+==============================================================================================
+
+Exercice pratique :
+
+1. Créez une application Flask qui utilise PostgreSQL
+
+2. Dockerisez l'application
+
+3. Utilisez Docker Compose pour orchestrer tous les services
+*********************************************************************************************************************
+PARTIE 4 : DOCKER COMPOSE
+********************************************************************************************************************
+4.1 Introduction à Docker Compose
+Théorie
+Docker Compose est un outil permettant de définir et d'exécuter des applications multi-conteneurs avec un seul fichier YAML.
+
+Structure du fichier docker-compose.yml
+
+version: '3.8'
+
+# 1. Services (conteneurs)
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - DEBUG=true
+    volumes:
+      - ./app:/app
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+# 2. Volumes
+volumes:
+  db-data:
+
+# 3. Networks
+networks:
+  default:
+    driver: bridge
+
+EXERCICES PARTIE 4
+Exercice 4.1 : Application WordPress
+Objectif : Déployer WordPress avec MySQL
+
+docker-compose.yml :
+============================================================================================
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: wordpress-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - wp-network
+
+  wordpress:
+    image: wordpress:latest
+    container_name: wordpress-app
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wp_data:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - wp-network
+
+volumes:
+  db_data:
+  wp_data:
+
+networks:
+  wp-network:
+    driver: bridge
+============================================================================================
+
+Commandes :
+# Démarrer
+docker-compose up -d
+
+# Voir les logs
+docker-compose logs -f
+
+# Arrêter
+docker-compose down
+
+# Arrêter et supprimer les volumes
+docker-compose down -v
+Exercice 4.2 : Application MEAN Stack
+Objectif : Déployer MongoDB, Express, Angular, Node.js
+
+docker-compose.yml :
+
+============================================================================================
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - mean-network
+
+  node:
+    build: ./backend
+    container_name: node-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/meanapp
+    depends_on:
+      - mongo
+    networks:
+      - mean-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  angular:
+    build: ./frontend
+    container_name: angular-app
+    restart: unless-stopped
+    ports:
+      - "4200:4200"
+    depends_on:
+      - node
+    networks:
+      - mean-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  mongo-data:
+
+networks:
+  mean-network:
+
+============================================================================================
+Exercice 4.3 : Service de monitoring
+Objectif : Mettre en place une stack de monitoring
+
+docker-compose.yml :
+============================================================================================
+version: '3.8'
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    volumes:
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    networks:
+      - monitoring
+
+volumes:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  monitoring:
+
+============================================================================================
+
+prometheus.yml :
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+Exercice 4.4 : Scale et Load Balancing
+Objectif : Mettre à l'échelle des services
+============================================================================================
+version: '3.8'
+
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "8080-8082:80"
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  app:
+    build: .
+    environment:
+      - NODE_ENV=production
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+============================================================================================
+Exercices :
+# Scale manuel
+docker-compose up -d --scale web=5
+
+# Voir les services
+docker-compose ps
+
+# Inspecter un service
+docker-compose logs web
+
+Exercice 4.5 : Environnements multiples
+Objectif : Gérer différents environnements (dev, staging, prod)
+
+Structure :
+============================================================================================
+docker-compose.yml          # Configuration de base
+docker-compose.dev.yml      # Override pour dev
+docker-compose.prod.yml     # Override pour prod
+.env.dev                    # Variables dev
+.env.prod                   # Variables prod
+============================================================================================
+
+docker-compose.yml :
+
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DB_HOST=${DB_HOST:-localhost}
+    volumes:
+      - ./app:/app
+
+docker-compose.prod.yml :
+version: '3.8'
+
+services:
+  app:
+    ports:
+      - "80:5000"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./app:/app
+    restart: always
+
+Commandes :
+
+# Développement
+docker-compose up -d
+
+# Production
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+***********************************************************************************************************
+PARTIE 5 : VOLUMES ET PERSISTANCE
+**********************************************************************************************************
+5.1 Types de Volumes
+Théorie
+Bind Mounts : Mappage direct entre l'hôte et le conteneur
+
+Volumes Docker : Gérés par Docker
+tmpfs mounts : Stockage en mémoire (temporaire)
+
+EXERCICES PARTIE 5
+Exercice 5.1 : Bind Mounts pour le développement
+Objectif : Utiliser des bind mounts pour le développement en direct
+============================================================================================
+# 1. Structure de projet
+mkdir app-dev
+cd app-dev
+
+# 2. Créer un fichier index.html
+echo "<h1>Hello from bind mount!</h1>" > index.html
+
+# 3. Lancer Nginx avec bind mount
+docker run -d -p 8080:80 -v $(pwd):/usr/share/nginx/html --name nginx-bind nginx:alpine
+
+# 4. Modifier le fichier index.html
+echo "<h1>Modified in real-time!</h1>" > index.html
+
+# 5. Vérifier les changements
+curl localhost:8080
+
+
+============================================================================================
+
+Exercice pratique :
+
+1. Créez un projet Flask avec bind mount
+
+2. Modifiez le code et voyez les changements en temps réel
+
+3. Utilisez un bind mount pour les logs
+
+Exercice 5.2 : Volumes Docker
+Objectif : Utiliser les volumes gérés par Docker
+============================================================================================
+# 1. Créer un volume
+docker volume create my-data
+
+# 2. Inspecter le volume
+docker volume inspect my-data
+
+# 3. Utiliser le volume
+docker run -d -v my-data:/data --name app-with-volume alpine tail -f /dev/null
+
+# 4. Écrire des données
+docker exec app-with-volume sh -c "echo 'Hello' > /data/test.txt"
+
+# 5. Vérifier les données
+docker exec app-with-volume cat /data/test.txt
+
+# 6. Utiliser le même volume avec un autre conteneur
+docker run --rm -v my-data:/data alpine cat /data/test.txt
+
+============================================================================================
+
+Exercice Pratique :
+
+1. Créez un volume pour PostgreSQL
+
+2. Lancez PostgreSQL avec ce volume
+
+3. Créez une base de données et des tables
+
+4. Arrêtez et supprimez le conteneur
+
+5. Relancez PostgreSQL avec le même volume
+
+6. Vérifiez que les données sont toujours présentes
+
+Exercice 5.3 : Backup et Restauration des volumes
+Objectif : Sauvegarder et restaurer des données
+============================================================================================
+# 1. Backup d'un volume
+docker run --rm -v my-data:/data -v $(pwd):/backup alpine tar czf /backup/data-backup.tar.gz -C /data .
+
+# 2. Restaurer un volume
+docker run --rm -v my-data:/data -v $(pwd):/backup alpine tar xzf /backup/data-backup.tar.gz -C /data
+
+# 3. Backup avec compression
+docker run --rm -v my-data:/data -v $(pwd):/backup alpine sh -c "tar czf /backup/data-$(date +%Y%m%d).tar.gz -C /data ."
+
+============================================================================================
+
+Exercice de sauvegarde :
+
+1. Créez un volume avec des données
+
+2. Créez un script de backup automatisé
+
+3. Simulez une perte de données
+
+4. Restaurez à partir du backup
+
+Exercice 5.4 : Volumes avec Docker Compose
+Objectif : Gérer les volumes dans Compose
+============================================================================================
+
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    volumes:
+      # Volume nommé
+      - db-data:/var/lib/postgresql/data
+      # Bind mount pour les scripts d'initialisation
+      - ./init-scripts:/docker-entrypoint-initdb.d
+      # Volume spécifique à un conteneur
+      - /tmp:/tmp
+
+  app:
+    build: .
+    volumes:
+      # Partager un volume avec db
+      - db-data:/app/data:ro
+      # Volume anonyme
+      - /app/node_modules
+
+volumes:
+  db-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /mnt/data
+      o: bind
+============================================================================================
+
+Exercice 5.5 : Partage de volumes entre conteneurs
+Objectif : Utiliser des volumes partagés
+============================================================================================
+version: '3.8'
+
+services:
+  producer:
+    image: alpine
+    volumes:
+      - shared-data:/data
+    command: sh -c "while true; do echo $(date) > /data/log.txt; sleep 5; done"
+
+  consumer:
+    image: alpine
+    volumes:
+      - shared-data:/data
+    command: sh -c "tail -f /data/log.txt"
+
+volumes:
+  shared-data:
+
+============================================================================================
+Exercice pratique :
+
+1. Créez deux conteneurs partageant un même volume
+
+2. Faites écrire des données par un conteneur
+
+3. Lisez les données avec l'autre conteneur
+
+4. Testez les permissions d'écriture
+
+******************************************************************************************************************
+
+PARTIE 6 : RÉSEAUX DOCKER
+******************************************************************************************************************
+6.1 Types de Réseaux
+Théorie
+bridge : Réseau par défaut (isolé)
+
+host : Utilise le réseau de l'hôte
+
+overlay : Multi-hôte (Swarm)
+
+macvlan : Attribution d'adresses MAC
+
+none : Pas de réseau
+
+EXERCICES PARTIE 6
+Exercice 6.1 : Réseau Bridge
+Objectif : Comprendre le réseau bridge par défaut
+============================================================================================
+# 1. Lister les réseaux
+docker network ls
+
+# 2. Inspecter le réseau bridge
+docker network inspect bridge
+
+# 3. Lancer deux conteneurs sur le réseau bridge
+docker run -d --name conteneur1 alpine sleep 3600
+docker run -d --name conteneur2 alpine sleep 3600
+
+# 4. Vérifier les IPs
+docker inspect conteneur1 | grep IPAddress
+docker inspect conteneur2 | grep IPAddress
+
+# 5. Tester la communication
+docker exec conteneur1 ping -c 3 <IP_conteneur2>
+
+============================================================================================
+Exercice 6.2 : Réseau Bridge Personnalisé
+Objectif : Créer et utiliser des réseaux personnalisés
+============================================================================================
+# 1. Créer un réseau personnalisé
+docker network create --driver bridge --subnet 172.20.0.0/16 --ip-range 172.20.0.0/24 my-network
+
+# 2. Lancer des conteneurs sur le réseau
+docker run -d --name app1 --network my-network nginx:alpine
+docker run -d --name app2 --network my-network nginx:alpine
+
+# 3. Communication par nom (DNS automatique)
+docker exec app1 ping app2
+
+# 4. Ajouter un alias
+docker network connect my-network app2 --alias backend
+
+# 5. Voir les détails du réseau
+docker network inspect my-network
+
+============================================================================================
+
+Exercice pratique :
+
+1. Créez deux réseaux différents
+
+2. Connectez un conteneur aux deux réseaux
+
+3. Testez la communication avec d'autres conteneurs
+
+4. Analysez les règles iptables créées par Docker
+
+Exercice 6.3 : Isolation réseau
+
+Objectif : Isoler les conteneurs pour la sécurité
+
+============================================================================================
+version: '3.8'
+
+services:
+  frontend:
+    image: nginx:alpine
+    networks:
+      - frontend-network
+    ports:
+      - "8080:80"
+
+  backend:
+    image: node:18-alpine
+    networks:
+      - backend-network
+      - frontend-network
+
+  database:
+    image: postgres:15
+    networks:
+      - backend-network
+    environment:
+      - POSTGRES_PASSWORD=secret
+
+networks:
+  frontend-network:
+    driver: bridge
+  backend-network:
+    driver: bridge
+    internal: true  # Pas d'accès externe
+
+============================================================================================
+Exercice 6.4 : Réseau Host
+Objectif : Utiliser le réseau de l'hôte
+============================================================================================
+# 1. Lancer un conteneur avec réseau host
+docker run -d --name host-net --network host nginx:alpine
+
+# 2. Vérifier que le port est accessible directement
+curl localhost:80
+
+# 3. Comparer avec un conteneur bridge
+docker run -d --name bridge-net nginx:alpine
+docker run --rm --network bridge alpine curl bridge-net:80
+
+# 4. Avantages et inconvénients
+# - Performance améliorée
+# - Pas de NAT
+# - Pas de ports mappés
+
+============================================================================================
+
+Exercice Pratique :
+
+1. Lancez un conteneur Node.js avec réseau host
+
+2. Lancez un conteneur Nginx avec réseau host sur le port 80
+
+3. Expliquez pourquoi on ne peut pas avoir deux conteneurs sur le même port avec host
+
+Exercice 6.5 : Proxy et Load Balancing
+Objectif : Mettre en place un reverse proxy
+============================================================================================
+version: '3.8'
+
+services:
+  # Servers
+  web1:
+    image: nginx:alpine
+    volumes:
+      - ./web1:/usr/share/nginx/html
+    networks:
+      - app-network
+
+  web2:
+    image: nginx:alpine
+    volumes:
+      - ./web2:/usr/share/nginx/html
+    networks:
+      - app-network
+
+  # Load Balancer
+  lb:
+    image: nginx:alpine
+    volumes:
+      - ./nginx-lb.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+    depends_on:
+      - web1
+      - web2
+
+networks:
+  app-network:
+    driver: bridge
+
+============================================================================================
+
+nginx-lb.conf :
+events {
+    worker_connections 1024;
+}
+
+http {
+    upstream backend {
+        server web1:80;
+        server web2:80;
+    }
+
+    server {
+        listen 80;
+
+        location / {
+            proxy_pass http://backend;
+            proxy_set_header Host $host;
+        }
+    }
+}
+Exercice 6.6 : Network Plugins et Overlay
+Objectif : Utiliser des plugins réseau avancés
+============================================================================================
+# 1. Créer un réseau overlay (nécessite Swarm)
+docker swarm init
+docker network create --driver overlay --attachable overlay-network
+
+# 2. Déployer des services
+docker service create --network overlay-network --name service1 nginx
+docker service create --network overlay-network --name service2 alpine sleep 3600
+
+# 3. Tester la communication
+docker exec -it $(docker ps -q -f name=service2) ping service1
+
+# 4. Voir les services
+docker service ls
+docker service ps service1
+
+============================================================================================
+
+PARTIE 7 : SÉCURITÉ ET BONNES PRATIQUES
+7.1 Sécurité des Conteneurs
+Théorie
+Principe du moindre privilège
+
+Utilisateur non-root
+
+Images minimales
+
+Scan de vulnérabilités
+
+Secrets management
+
+EXERCICES PARTIE 7
+Exercice 7.1 : Utilisateur non-root
+Objectif : Exécuter des conteneurs avec des permissions limitées
+
+Dockerfile sécurisé :
+============================================================================================
+FROM python:3.9-alpine
+
+# Créer un utilisateur non-root
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+WORKDIR /app
+
+# Copier les fichiers avec les bonnes permissions
+COPY --chown=appuser:appgroup requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY --chown=appuser:appgroup . .
+
+# Changer d'utilisateur
+USER appuser
+
+EXPOSE 5000
+CMD ["python", "app.py"]
+
+============================================================================================
+
+
+Exercice Pratique :
+
+1. Créez un Dockerfile avec utilisateur non-root
+
+2. Construisez et exécutez l'image
+
+3. Vérifiez les processus en cours : docker exec container ps aux
+
+4. Essayez d'écrire dans un répertoire protégé
+
+5. Expliquez pourquoi c'est plus sécurisé
+
+Exercice 7.2 : Scan de vulnérabilités
+Objectif : Identifier les vulnérabilités dans les images
+
+============================================================================================
+# 1. Installer Trivy
+curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+# 2. Scanne une image
+trivy image python:3.9
+
+# 3. Scanne avec sévérité
+trivy image --severity HIGH,CRITICAL nginx:latest
+
+# 4. Scanne un Dockerfile
+trivy config Dockerfile
+
+# 5. Docker Scan (intégré)
+docker scan nginx:latest
+
+============================================================================================
+
+Exercice pratique :
+
+Scannez différentes images et comparez les résultats
+
+Identifiez les vulnérabilités critiques
+
+Proposez des solutions de correction
+
+Exercice 7.3 : Gestion des Secrets
+Objectif : Sécuriser les données sensibles
+============================================================================================
+version: '3.8'
+
+services:
+  app:
+    image: myapp:latest
+    secrets:
+      - db_password
+      - api_key
+    environment:
+      - DB_USER=admin
+    command: sh -c "echo 'Password: ' && cat /run/secrets/db_password"
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  api_key:
+    external: true
+
+============================================================================================
+Fichier secrets/db_password.txt :
+SuperSecretPassword123!
+
+Sécuriser les secrets :
+# 1. Créer un secret externe
+echo "API_KEY_123" | docker secret create api_key -
+
+# 2. Utiliser dans un service
+docker service create --secret api_key --name app-with-secret nginx
+
+# 3. Voir les secrets
+docker secret ls
+docker secret inspect api_key
+
+Exercice Pratique :
+
+1. Créez une application qui utilise des secrets
+
+2. Stockez les secrets dans des fichiers protégés
+
+3. Accédez aux secrets depuis le conteneur
+
+4. Vérifiez que les secrets ne sont pas exposés dans les logs
+
+Exercice 7.4 : Docker Bench Security
+Objectif : Auditer la sécurité de l'hôte Docker
+============================================================================================
+# 1. Installer Docker Bench
+git clone https://github.com/docker/docker-bench-security.git
+cd docker-bench-security
+
+# 2. Exécuter l'audit
+docker run --rm --net host --pid host --userns host --cap-add audit_control \
+  -e DOCKER_CONTENT_TRUST=$DOCKER_CONTENT_TRUST \
+  -v /etc:/etc:ro \
+  -v /usr/bin/containerd:/usr/bin/containerd:ro \
+  -v /usr/bin/runc:/usr/bin/runc:ro \
+  -v /usr/lib/systemd:/usr/lib/systemd:ro \
+  -v /var/lib:/var/lib:ro \
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \
+  --label docker_bench_security \
+  docker/docker-bench-security
+
+# 3. Exécuter avec sortie formatée
+docker run --rm ... docker/docker-bench-security | tee bench-report.txt
+============================================================================================
+
+Exercice 7.5 : Content Trust
+Objectif : Vérifier l'intégrité des images
+
+============================================================================================
+# 1. Activer Docker Content Trust
+export DOCKER_CONTENT_TRUST=1
+
+# 2. Push une image signée
+docker push myusername/myimage:trusted
+
+# 3. Pull une image vérifiée
+docker pull myusername/myimage:trusted
+
+# 4. Voir les signatures
+docker trust inspect myusername/myimage:trusted
+
+# 5. Signer manuellement
+docker trust sign myusername/myimage:trusted
+
+============================================================================================
+
+Exercice Pratique :
+
+1. Créez une image
+
+2. Activez Content Trust
+
+3. Poussez et signez l'image
+
+4. Vérifiez la signature
+
+5. Essayez de pull une image non signée
+
+Exercice 7.6 : Ressources et Quotas
+Objectif : Limiter les ressources pour éviter les attaques DoS
+
+============================================================================================
+version: '3.8'
+
+services:
+  app:
+    image: myapp
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    read_only: true
+    tmpfs:
+      - /tmp
+
+============================================================================================
+Exercice de stress :
+
+1. Lancez un conteneur avec des limites strictes
+
+2. Essayez de consommer plus de ressources
+
+3. Observez le comportement
+
+4. Expliquez comment cela protège contre les attaques
+
+**********************************************************************************************
+
+PARTIE 8 : DOCKER SWARM
+
+*********************************************************************************************
+
+8.1 Introduction à Swarm
+Théorie
+Docker Swarm est un orchestrateur intégré qui permet de transformer plusieurs hôtes Docker en un cluster.
+
+Concepts Clés
+Manager : Nœud qui gère le cluster
+
+Worker : Nœud qui exécute les tâches
+
+Service : Définition d'un conteneur en cluster
+
+Task : Instance d'un service sur un nœud
+
+Stack : Ensemble de services (Compose pour Swarm)
+
+EXERCICES PARTIE 8
+Exercice 8.1 : Initialisation d'un Swarm
+Objectif : Créer un cluster Swarm
+============================================================================================
+# 1. Initialiser un Swarm
+docker swarm init --advertise-addr <IP_ETH0>
+
+# 2. Voir les nœuds
+docker node ls
+
+# 3. Obtenir la commande pour rejoindre un worker
+docker swarm join-token worker
+
+# 4. Obtenir la commande pour rejoindre un manager
+docker swarm join-token manager
+
+# 5. Ajouter un worker (sur une autre machine)
+docker swarm join --token <TOKEN> <IP_MANAGER>:2377
+
+============================================================================================
+
+Exercice pratique :
+
+1. Si vous avez plusieurs machines, initialisez un Swarm
+
+2. Ajoutez des workers
+
+3. Vérifiez les nœuds avec docker node ls
+
+4. Promouvez un worker en manager
+
+Exercice 8.2 : Déploiement de Services
+
+Objectif : Déployer des services dans Swarm
+============================================================================================
+# 1. Créer un service simple
+docker service create --name web --replicas 3 -p 8080:80 nginx:alpine
+
+# 2. Voir les services
+docker service ls
+
+# 3. Voir les tâches
+docker service ps web
+
+# 4. Inspecter un service
+docker service inspect web
+
+# 5. Mettre à jour le nombre de réplicas
+docker service scale web=5
+
+# 6. Mettre à jour l'image
+docker service update --image nginx:latest web
+
+# 7. Supprimer le service
+docker service rm web
+
+============================================================================================
+Exercice Pratique :
+
+1. Déployez un service Nginx avec 3 réplicas
+
+2. Simulez un échec d'un conteneur
+
+3. Observez la récupération automatique
+
+4. Mettez à jour le service
+
+5. Testez les mises à jour progressives
+
+Exercice 8.3 : Rolling Updates et Rollback
+Objectif : Gérer les mises à jour en production
+============================================================================================
+# 1. Déployer avec stratégie de mise à jour
+docker service create \
+  --name web \
+  --replicas 5 \
+  --update-parallelism 2 \
+  --update-delay 10s \
+  --update-failure-action rollback \
+  --rollback-parallelism 1 \
+  nginx:1.19-alpine
+
+# 2. Mettre à jour avec une nouvelle version
+docker service update --image nginx:1.20-alpine web
+
+# 3. Voir le statut de la mise à jour
+docker service ps web
+
+# 4. Forcer un rollback
+docker service update --rollback web
+
+============================================================================================
+Exercice pratique :
+
+1. Déployez un service avec 5 réplicas
+
+2. Mettez à jour avec une image non fonctionnelle
+
+3. Observez le comportement
+
+4. Effectuez un rollback
+
+5. Configurez une politique de mise à jour
+
+Exercice 8.4 : Placement et Contraintes
+Objectif : Contrôler où les conteneurs sont déployés
+============================================================================================
+# 1. Ajouter des labels aux nœuds
+docker node update --label-add environment=production node1
+docker node update --label-add environment=staging node2
+
+# 2. Déployer avec contraintes
+docker service create \
+  --name prod-app \
+  --constraint 'node.labels.environment == production' \
+  --replicas 3 \
+  nginx:alpine
+
+# 3. Placement avec préférences
+docker service create \
+  --name distributed-app \
+  --placement-pref 'spread=node.id' \
+  --replicas 5 \
+  nginx:alpine
+
+============================================================================================
+
+Exercice Pratique :
+
+1. Créez des nœuds avec différents labels
+
+2. Déployez des services avec des contraintes
+
+3. Testez l'effet des contraintes sur le placement
+
+4. Utilisez les préférences de placement
+
+Exercice 8.5 : Stacks avec Docker Stack
+Objectif : Déployer des applications complètes
+
+docker-stack.yml :
+============================================================================================
+version: '3.8'
+
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+  app:
+    image: myapp:latest
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    environment:
+      - NODE_ENV=production
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_PASSWORD=secret
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    deploy:
+      placement:
+        constraints:
+          - node.labels.db == true
+
+volumes:
+  db-data:
+============================================================================================
+Commandes :
+# 1. Déployer une stack
+docker stack deploy -c docker-stack.yml myapp
+
+# 2. Voir les services
+docker stack services myapp
+
+# 3. Voir les tâches
+docker stack ps myapp
+
+# 4. Voir les logs
+docker service logs myapp_web
+
+# 5. Supprimer la stack
+docker stack rm myapp
+
+Exercice pratique :
+
+1. Créez une stack complète avec web, app et db
+
+2. Déployez-la sur Swarm
+
+3. Mettez à jour la stack
+
+4. Testez les différentes configurations
+
+Exercice 8.6 : Swarm et Load Balancing
+Objectif : Comprendre le load balancing dans Swarm
+============================================================================================
+# 1. Déployer un service avec port publish
+docker service create --name web --replicas 3 -p 8080:80 nginx:alpine
+
+# 2. Tester le load balancing
+for i in {1..10}; do curl -s localhost:8080 | grep -i "nginx"; done
+
+# 3. Mode routing mesh
+docker service create --name mesh-test --mode global -p 8080:80 nginx:alpine
+
+# 4. Mode host (pas de load balancing)
+docker service create --name host-test --mode global --publish mode=host,target=80,published=8080 nginx:alpine
+
+============================================================================================
+
+Exercice Pratique :
+
+1. Déployez un service avec le mode routing mesh
+
+2. Testez l'accès depuis différents nœuds
+
+3. Changez le mode de publication
+
+4. Comparez les comportements
+
+**************************************************************************************************************************
+
+PARTIE 9 : INTRODUCTION À KUBERNETES
+**************************************************************************************************************************
+
+9.1 Concepts Fondamentaux
+Théorie
+Kubernetes (K8s) est l'orchestrateur standard pour les conteneurs. Il offre des fonctionnalités avancées de scaling, auto-healing, et rolling updates.
+
+Concepts Clés
+Pod : Plus petite unité déployable (1 ou plusieurs conteneurs)
+
+Deployment : Gère l'état désiré des pods
+
+Service : Exposition des pods vers l'extérieur
+
+Ingress : Routing HTTP/HTTPS
+
+ConfigMap : Configuration non-sensible
+
+Secret : Données sensibles
+
+Volume : Stockage persistant
+
+Namespace : Isolation des ressources
+
+EXERCICES PARTIE 9
+Exercice 9.1 : Installation de Minikube
+Objectif : Installer un cluster Kubernetes local
+
+============================================================================================
+# 1. Installer Minikube
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+# 2. Installer kubectl
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+# 3. Démarrer Minikube
+minikube start --driver=docker
+
+# 4. Vérifier le cluster
+kubectl cluster-info
+kubectl get nodes
+
+# 5. Activer le dashboard
+minikube addons enable dashboard
+minikube dashboard
+
+============================================================================================
+Exercice 9.2 : Premier Déploiement
+Objectif : Déployer une application sur Kubernetes
+
+============================================================================================
+nginx-deployment.yaml :
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+
+============================================================================================
+Commandes :
+
+# 1. Appliquer le déploiement
+kubectl apply -f nginx-deployment.yaml
+
+# 2. Voir les pods
+kubectl get pods
+kubectl get pods -o wide
+
+# 3. Voir le déploiement
+kubectl get deployments
+
+# 4. Voir les événements
+kubectl describe deployment nginx-deployment
+
+# 5. Exposer le service
+kubectl expose deployment nginx-deployment --type=NodePort --port=80
+
+# 6. Voir le service
+kubectl get services
+
+# 7. Accéder à l'application
+minikube service nginx-deployment
+
+Exercice Pratique :
+
+1. Déployez une application Nginx
+
+2. Augmentez le nombre de réplicas à 5
+
+3. Mettez à jour l'image Nginx
+
+4. Observez le rolling update
+
+5. Effectuez un rollback
+
+Exercice 9.3 : Services et Ingress
+Objectif : Exposer des applications
+service.yaml :
+=========================================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-service
+spec:
+  selector:
+    app: myapp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+===============================================================================================
+ingress.yaml :
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp-ingress
+spec:
+  rules:
+  - host: myapp.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: myapp-service
+            port:
+              number: 80
+Exercice pratique :
+
+1. Créez un deployment
+
+2. Exposez-le avec un service ClusterIP
+
+3. Exposez-le avec NodePort
+
+4. Configurez un Ingress
+
+5. Testez l'accès via le navigateur
+
+Exercice 9.4 : ConfigMaps et Secrets
+Objectif : Gérer la configuration
+
+configmap.yaml :
+==============================================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  APP_ENV: production
+  APP_DEBUG: "false"
+  DATABASE_HOST: db-service
+  DATABASE_PORT: "5432"
+==============================================================================================
+secret.yaml :
+==============================================================================================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secrets
+type: Opaque
+data:
+  DB_PASSWORD: c3VwZXJzZWNyZXQ=  # Base64 encodé
+  API_KEY: dXNlci1hcGkta2V5
+
+============================================================================================
+
+Utilisation dans un pod :
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-pod
+spec:
+  containers:
+  - name: app
+    image: myapp:latest
+    env:
+      - name: DB_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: DB_PASSWORD
+    envFrom:
+      - configMapRef:
+          name: app-config
+    volumeMounts:
+      - name: config-volume
+        mountPath: /app/config
+  volumes:
+    - name: config-volume
+      configMap:
+        name: app-config
+
+Exercice Pratique :
+
+1. Créez un ConfigMap avec des variables d'environnement
+
+2. Créez un Secret avec des données sensibles
+
+3. Montez-les dans un pod
+
+4. Vérifiez l'accès aux variables
+
+5. Mettez à jour la configuration
+
+Exercice 9.5 : Persistent Volumes
+Objectif : Stocker des données persistantes
+============================================================================================
+pv.yaml :
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-data
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data
+===========================================================================================
+pvc.yaml :
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+===========================================================================================
+
+Utilisation dans un pod :
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-with-storage
+spec:
+  containers:
+  - name: app
+    image: nginx
+    volumeMounts:
+    - name: data-storage
+      mountPath: /usr/share/nginx/html
+  volumes:
+  - name: data-storage
+    persistentVolumeClaim:
+      claimName: pvc-data
+================================================================================================
+Exercice pratique :
+
+1. Créez un PV
+
+2. Créez un PVC
+
+3. Montez-le dans un pod
+
+4. Écrivez des données
+
+5. Supprimez et recréez le pod
+
+6. Vérifiez la persistance
+
+Exercice 9.6 : Helm
+Objectif : Utiliser Helm pour les déploiements
+============================================================================================
+# 1. Installer Helm
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+# 2. Ajouter un repo
+helm repo add bitnami https://charts.bitnami.com/bitnami
+
+# 3. Installer un chart
+helm install my-release bitnami/nginx
+
+# 4. Voir les releases
+helm list
+
+# 5. Mettre à jour
+helm upgrade my-release bitnami/nginx --set replicaCount=3
+
+# 6. Désinstaller
+helm uninstall my-release
+
+============================================================================================
+Créer un chart :
+# 1. Créer un nouveau chart
+helm create mychart
+
+# 2. Modifier values.yaml
+vim mychart/values.yaml
+
+# 3. Tester le chart
+helm template mychart
+
+# 4. Installer le chart
+helm install my-app ./mychart
+
+# 5. Override des valeurs
+helm install my-app ./mychart --set service.type=LoadBalancer
+
+=============================================================================================
+Exercice Pratique :
+
+1. Créez un chart pour votre application
+
+2. Paramétrez les valeurs
+
+3. Installez avec différentes configurations
+
+4. Testez les rollbacks avec Helm
+
+********************************************************************************************
+
+PARTIE 10 : CI/CD ET DEVOPS AVEC DOCKER
+*******************************************************************************************
+10.1 Pipeline CI/CD
+Théorie
+Intégrer Docker dans une chaîne CI/CD permet d'automatiser le build, les tests et le déploiement des applications.
+
+1. Composants d'un Pipeline
+
+2. Code : Git (GitHub, GitLab, Bitbucket)
+
+3. Build : Construction de l'image Docker
+
+4. Test : Tests unitaires et d'intégration
+
+5. Push : Envoi vers un registre
+
+6. Deploy : Déploiement en production
+
+EXERCICES PARTIE 10
+Exercice 10.1 : GitHub Actions
+Objectif : Créer un pipeline CI/CD avec GitHub Actions
+
+.github/workflows/docker-publish.yml :
+
+============================================================================================
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Run security scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        severity: 'CRITICAL,HIGH'
+
+============================================================================================
+Exercice Pratique :
+
+1. Créez un repository GitHub
+
+2. Ajoutez le workflow ci-dessus
+
+3. Poussez du code
+
+4. Observez le pipeline
+
+5. Analysez les résultats
+
+Exercice 10.2 : GitLab CI/CD
+Objectif : Utiliser GitLab CI pour Docker
+.gitlab-ci.yml :
+============================================================================================
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  DOCKER_REGISTRY: registry.gitlab.com
+  DOCKER_IMAGE: $DOCKER_REGISTRY/$CI_PROJECT_PATH
+  DOCKER_TAG: $CI_COMMIT_SHORT_SHA
+
+before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $DOCKER_REGISTRY
+
+build:
+  stage: build
+  script:
+    - docker build -t $DOCKER_IMAGE:$DOCKER_TAG .
+    - docker tag $DOCKER_IMAGE:$DOCKER_TAG $DOCKER_IMAGE:latest
+    - docker push $DOCKER_IMAGE:$DOCKER_TAG
+    - docker push $DOCKER_IMAGE:latest
+  only:
+    - main
+
+test:
+  stage: test
+  script:
+    - docker run --rm $DOCKER_IMAGE:$DOCKER_TAG npm test
+    - docker run --rm $DOCKER_IMAGE:$DOCKER_TAG npm run lint
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  script:
+    - docker pull $DOCKER_IMAGE:$DOCKER_TAG
+    - docker tag $DOCKER_IMAGE:$DOCKER_TAG $DOCKER_IMAGE:production
+    - docker push $DOCKER_IMAGE:production
+    - ssh prod-server "docker pull $DOCKER_IMAGE:production && docker-compose up -d"
+  only:
+    - main
+  when: manual
+
+============================================================================================ 
+
+Exercice 10.3 : Jenkins Pipeline
+Objectif : Mettre en place un pipeline Jenkins pour Docker
+
+Jenkinsfile :
+============================================================================================
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_REGISTRY = 'docker.io'
+        DOCKER_IMAGE = 'myapp'
+        DOCKER_TAG = "${env.BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").inside {
+                        sh 'npm test'
+                    }
+                }
+            }
+        }
+
+        stage('Push') {
+            steps {
+                script {
+                    docker.withRegistry('', 'docker-hub-credentials') {
+                        docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
+                        docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push('latest')
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    sh """
+                        ssh user@prod-server "
+                            docker pull ${DOCKER_IMAGE}:${DOCKER_TAG} &&
+                            docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:production &&
+                            docker-compose up -d --no-deps web
+                        "
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            emailext (
+                subject: "Pipeline failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                body: "Check ${env.BUILD_URL} for details.",
+                to: 'dev-team@example.com'
+            )
+        }
+    }
+}
+
+============================================================================================
+
+Exercice pratique :
+
+1. Configurez Jenkins avec Docker
+
+2. Créez un pipeline pour votre application
+
+3. Testez les différentes étapes
+
+4. Ajoutez des notifications
+
+Exercice 10.4 : Multi-environnements avec Docker
+Objectif : Gérer les environnements dev, staging, prod
+
+Structure de projet :
+============================================================================================
+├── docker-compose.yml
+├── docker-compose.override.yml  # Dev
+├── docker-compose.staging.yml
+├── docker-compose.prod.yml
+├── .env.dev
+├── .env.staging
+└── .env.prod
+
+============================================================================================
+docker-compose.staging.yml :
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        - NODE_ENV=staging
+    environment:
+      - NODE_ENV=staging
+      - API_URL=https://api-staging.example.com
+    command: npm run start:staging
+
+  redis:
+    image: redis:alpine
+    resources:
+      limits:
+        cpus: '0.5'
+        memory: 256M
+
+============================================================================================
+Script de déploiement :
+
+#!/bin/bash
+
+# deploy.sh
+ENV=${1:-development}
+
+case $ENV in
+  development)
+    docker-compose up -d
+    ;;
+  staging)
+    docker-compose -f docker-compose.yml -f docker-compose.staging.yml up -d
+    ;;
+  production)
+    docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+    ;;
+  *)
+    echo "Environment must be: development, staging, or production"
+    exit 1
+    ;;
+esac
+
+============================================================================================
+
+Exercice Pratique :
+
+1. Créez des fichiers compose pour 3 environnements
+
+2. Implémentez le script de déploiement
+
+3. Testez les différents environnements
+
+4. Ajoutez des variables spécifiques
+
+Exercice 10.5 : Monitoring et Logging
+Objectif : Surveiller les conteneurs en production
+Stack de monitoring :
+============================================================================================
+version: '3.8'
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-dashboards:/etc/grafana/provisioning/dashboards
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - /var/log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./promtail-config.yaml:/etc/promtail/config.yaml
+    command: -config.file=/etc/promtail/config.yaml
+    depends_on:
+      - loki
+
+============================================================================================
+prometheus.yml :
+
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'docker'
+    static_configs:
+      - targets: ['docker-host:9323']
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+============================================================================================
+Exercice pratique :
+
+1. Déployez la stack de monitoring
+
+2. Ajoutez cAdvisor pour les métriques conteneurs
+
+3. Configurez des alertes
+
+4. Créez des dashboards Grafana
+
+5. Mettez en place des logs centralisés
+
+Exercice 10.6 : Projet Final - Pipeline Complet
+
+Objectif : Mettre en place un pipeline DevOps complet
+
+Configuration complète :
+
+1. Application : Application Flask avec PostgreSQL
+
+2. Docker : Multi-stage build, image légère
+
+3. Orchestration : Kubernetes + Helm
+
+4. CI/CD : GitHub Actions ou GitLab CI
+
+5. Monitoring : Prometheus + Grafana
+
+6. Logging : ELK Stack ou Loki
+
+7. Sécurité : Scanner de vulnérabilités
+
+docker-compose.yml :
+============================================================================================
+
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: appdb
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  redis:
+    image: redis:alpine
+    networks:
+      - app-network
+
+  app:
+    build:
+      context: .
+      args:
+        - ENV=${ENV:-production}
+    image: myapp:${VERSION:-latest}
+    environment:
+      - DATABASE_URL=postgresql://appuser:${DB_PASSWORD}@db/appdb
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - db
+      - redis
+    networks:
+      - app-network
+    deploy:
+      replicas: ${REPLICAS:-2}
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db-data:
+============================================================================================
+Exercice final :
+
+Configurez le pipeline CI/CD
+
+Implémentez tous les tests
+
+Déployez sur plusieurs environnements
+
+Mettez en place la surveillance
+
+Documentez le processus
+
+Présentez votre solution
+
+=========================================================================================================
+=========================================================================================================
+=========================================================================================================
+
+ANNEXES
+Annexe A : Commandes Docker Essentielles
+*****************************************************************************************************
+Gestion des conteneurs
+*****************************************************************************************************
+docker run     # Créer et démarrer un conteneur
+docker start   # Démarrer un conteneur arrêté
+docker stop    # Arrêter un conteneur
+docker restart # Redémarrer un conteneur
+docker kill    # Forcer l'arrêt
+docker rm      # Supprimer un conteneur
+docker ps      # Lister les conteneurs
+docker exec    # Exécuter une commande dans un conteneur
+docker logs    # Voir les logs
+docker attach  # S'attacher à un conteneur
+docker port    # Voir les ports mappés
+docker stats   # Statistiques des ressources
+
+****************************************************************************************************
+
+Gestion des images
+
+****************************************************************************************************
+docker build   # Construire une image
+docker pull    # Télécharger une image
+docker push    # Envoyer une image
+docker images  # Lister les images
+docker rmi     # Supprimer une image
+docker tag     # Taguer une image
+docker history # Historique d'une image
+docker save    # Sauvegarder une image
+docker load    # Charger une image
+
+****************************************************************************************************
+
+Gestion des réseaux
+
+****************************************************************************************************
+docker network create   # Créer un réseau
+docker network ls      # Lister les réseaux
+docker network rm      # Supprimer un réseau
+docker network connect # Connecter un conteneur
+docker network disconnect
+docker network inspect  # Inspecter un réseau
+
+****************************************************************************************************
+
+Gestion des volumes
+
+****************************************************************************************************
+docker volume create   # Créer un volume
+docker volume ls      # Lister les volumes
+docker volume rm      # Supprimer un volume
+docker volume inspect # Inspecter un volume
+docker volume prune   # Supprimer les volumes inutilisés
+
+============================================================================================
+============================================================================================
+============================================================================================
+Annexe B : Bonnes Pratiques Docker
+Dockerfile
+Utilisez des images minimales (alpine)
+
+Optimisez le cache des couches
+
+Utilisez multi-stage builds
+
+Exécutez avec un utilisateur non-root
+
+Ne stockez pas de secrets dans l'image
+
+Utilisez .dockerignore
+
+Évitez les RUN apt-get clean && apt-get autoremove
+
+Utilisez ADD avec précaution (préférez COPY)
+
+Sécurité
+Scannez les images régulièrement
+
+Utilisez Docker Content Trust
+
+Limitez les ressources
+
+Configurez les logs
+
+Mettez à jour régulièrement
+
+Utilisez des secrets externes
+
+Performance
+Utilisez des volumes pour les données
+
+Optimisez les layers Docker
+
+Utilisez le build cache
+
+Gérez les logs (taille, rotation)
+
+Utilisez des réseaux personnalisés
+
+Production
+Utilisez l'orchestration (Swarm/Kubernetes)
+
+Configurez les health checks
+
+Implémentez le logging centralisé
+
+Mettez en place le monitoring
+
+Automatisez les backups
+
+Utilisez des environnements multiples
+
+Annexe C : Débogage et Résolution de Problèmes
+Problèmes courants et solutions
+1. Erreur "port already allocated"
+
+bash
+# Trouver le conteneur utilisant le port
+docker ps --filter "publish=8080"
+# Voir les ports utilisés
+docker port <container>
+# Forcer la libération
+docker stop <container> && docker rm <container>
+2. Problème de permissions
+
+bash
+# Ajouter l'utilisateur au groupe docker
+sudo usermod -aG docker $USER
+# Réinitialiser la session
+newgrp docker
+# Vérifier les permissions
+ls -la /var/run/docker.sock
+3. Espace disque insuffisant
+
+bash
+# Nettoyer Docker
+docker system prune -a -f
+# Voir l'utilisation
+docker system df
+# Supprimer les volumes inutilisés
+docker volume prune -f
+4. Logs trop volumineux
+
+bash
+# Limiter la taille des logs dans daemon.json
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  }
+}
+# Nettoyer les logs
+docker logs --tail=100 <container>
+Annexe D : Ressources Utiles
+Documentation
+Docker Official Docs
+
+Kubernetes Official Docs
+
+Dockerfile Best Practices
+
+Docker Security
+
+Outils
+Trivy : Scanner de vulnérabilités
+
+Hadolint : Linter pour Dockerfile
+
+Docker Bench : Audit de sécurité
+
+Portainer : Interface Web pour Docker
+
+Lens : Interface Kubernetes
+
+k9s : Terminal Kubernetes
+
+Learning Resources
+Play with Docker : https://labs.play-with-docker.com/
+
+Katacoda : https://www.katacoda.com/courses/docker
+
+Docker Labs : https://github.com/docker/labs
+===================================================================================================================================================
+CONCLUSION
+Ce cours complet vous a guidé à travers tous les aspects de Docker et de l'intégration DevOps, des concepts fondamentaux aux pratiques avancées en production.
+====================================================================================================================================================
+====================================================================================================================================================
+====================================================================================================================================================
+
+Fin
+============================================================================================
