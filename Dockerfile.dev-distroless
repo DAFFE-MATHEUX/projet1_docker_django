@@ -16,17 +16,18 @@ COPY  . .
 
 #Etape 2 : destroless
 
-FROM grc.io/distroless/python3
+FROM gcr.io/distroless/python3
 
-COPY --from=stage /app /app
+COPY --from=base /app /app
 
+WORKDIR /app
 # Informe Docker que l'application écoute sur le port 8000.
 # Cela ne publie pas automatiquement le port.
 EXPOSE 8000
 
 # Commande principale exécutée lorsque le conteneur démarre.
 # Elle lance le fichier manage.py.
-ENTRYPOINT ["python3", "manage.py"]
+ENTRYPOINT [ "python3", "manage.py" ]
 
 # Arguments ajoutés à ENTRYPOINT.
 # La commande finale sera :
