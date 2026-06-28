@@ -1,35 +1,59 @@
-FROM python:3.11-slim as base
+# ==========================
+# ETAPE 1 : Construction (Builder)
+# ==========================
 
-# Définit le répertoire de travail à l'intérieur du conteneur.
+# Utilise l'image officielle Python 3.11 légère.
+# Cette image contient déjà Python et pip.
+FROM python:3.11-slim AS base
+
+# Définit le dossier de travail dans le conteneur.
 # Toutes les commandes suivantes seront exécutées dans /app.
 WORKDIR /app
 
-# Copie uniquement le fichier requirements.txt depuis le projet
-# vers le dossier /app du conteneur.
-COPY requirements.txt /app/
+# Copie uniquement le fichier requirements.txt.
+# Cela permet à Docker d'utiliser son cache si ce fichier ne change pas.
+COPY requirements.txt .
 
-# Installe toutes les dépendances Python indiquées
-# dans le fichier requirements.txt.
-RUN pip3 install --break-system-packages --no-cache-dir -r requirements.txt
+# Installe toutes les dépendances Python du projet.
+# --no-cache-dir évite de conserver le cache pip afin de réduire la taille de l'image.
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY  . .
+# Copie ensuite tous les fichiers du projet dans le conteneur.
+COPY . .
 
-#Etape 2 : destroless
 
+
+# ==========================
+# ETAPE 2 : Image finale (Production)
+# ==========================
+
+# Utilise une image Distroless.
+# Cette image est très légère et plus sécurisée car elle ne contient
+# ni shell, ni gestionnaire de paquets, ni outils inutiles.
 FROM gcr.io/distroless/python3
 
+# Définit le dossier de travail.
+WORKDIR /app
+
+# Copie toutes les bibliothèques Python installées depuis l'image de construction.
+COPY --from=base /usr/local/lib/python3.11 /usr/local/lib/python3.11
+
+# Copie les exécutables Python (pip, python, etc.).
+COPY --from=base /usr/local/bin /usr/local/bin
+
+# Copie le projet Django.
 COPY --from=base /app /app
 
-WORKDIR /app
-# Informe Docker que l'application écoute sur le port 8000.
-# Cela ne publie pas automatiquement le port.
+# Indique que l'application écoute sur le port 8000.
 EXPOSE 8000
 
-# Commande principale exécutée lorsque le conteneur démarre.
+# Définit la commande principale exécutée au démarrage.
 # Elle lance le fichier manage.py.
-ENTRYPOINT [ "python3", "manage.py" ]
+ENTRYPOINT ["python3", "manage.py"]
 
-# Arguments ajoutés à ENTRYPOINT.
-# La commande finale sera :
+# Arguments transmis automatiquement à ENTRYPOINT.
+# La commande exécutée sera :
+#
+# python3 manage.py runserver 0.0.0.0:8000
+#
 CMD ["runserver", "0.0.0.0:8000"]
-

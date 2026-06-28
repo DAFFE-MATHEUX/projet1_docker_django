@@ -1,40 +1,55 @@
-# Etape 1 : build
+# ==========================================
+# ETAPE 1 : Construction de l'application
+# ==========================================
 
-FROM python3:3.11-slim as build
+# Utilise l'image officielle Python 3.11 version Slim.
+# Cette image contient déjà Python et pip.
+FROM python:3.11-slim AS build
 
-# Définit le répertoire de travail à l'intérieur du conteneur.
+# Définit le dossier de travail à l'intérieur du conteneur.
 # Toutes les commandes suivantes seront exécutées dans /app.
 WORKDIR /app
 
-# Copie uniquement le fichier requirements.txt depuis le projet
-# vers le dossier /app du conteneur.
-COPY requirements.txt /app/
+# Copie uniquement le fichier requirements.txt.
+# Cette méthode permet à Docker d'utiliser son cache si les dépendances
+# ne changent pas entre deux constructions.
+COPY requirements.txt .
 
-# Installe toutes les dépendances Python indiquées
-# dans le fichier requirements.txt.
-RUN pip3 install --break-system-packages --no-cache-dir -r requirements.txt
+# Installe toutes les bibliothèques Python nécessaires au projet.
+# --no-cache-dir évite de conserver le cache de pip afin
+# de réduire la taille finale de l'image.
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY  . .
+# Copie ensuite tous les fichiers du projet
+# (manage.py, applications, templates, static, etc.).
+COPY . .
 
-# etape 2 : production
 
-FROM python3:3.11-slim
 
-COPY --from=builder /app /app
+# ==========================================
+# ETAPE 2 : Image de production
+# ==========================================
 
-# Définit le répertoire de travail à l'intérieur du conteneur.
-# Toutes les commandes suivantes seront exécutées dans /app.
+# Utilise de nouveau une image Python légère.
+# Cette image servira uniquement à exécuter l'application.
+FROM python:3.11-slim
+
+# Définit le dossier de travail.
 WORKDIR /app
 
-# Informe Docker que l'application écoute sur le port 8000.
-# Cela ne publie pas automatiquement le port.
+# Copie toute l'application construite lors de la première étape.
+COPY --from=build /app /app
+
+# Indique que Django écoutera sur le port 8000.
 EXPOSE 8000
 
-# Commande principale exécutée lorsque le conteneur démarre.
-# Elle lance le fichier manage.py.
-ENTRYPOINT [ "python3", "manage.py" ]
+# Définit la commande principale exécutée au démarrage.
+ENTRYPOINT ["python3", "manage.py"]
 
-# Arguments ajoutés à ENTRYPOINT.
-# La commande finale sera :
+# Les paramètres transmis à ENTRYPOINT.
+# Docker exécutera automatiquement :
+#
+# python3 manage.py runserver 0.0.0.0:8000
+#
 CMD ["runserver", "0.0.0.0:8000"]
 
