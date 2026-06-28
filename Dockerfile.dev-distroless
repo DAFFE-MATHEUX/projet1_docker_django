@@ -4,7 +4,7 @@
 
 # Utilise l'image officielle Python 3.11 légère.
 # Cette image contient déjà Python et pip.
-FROM python:3.11-slim AS base
+FROM python:3.12-slim AS base
 
 # Définit le dossier de travail dans le conteneur.
 # Toutes les commandes suivantes seront exécutées dans /app.

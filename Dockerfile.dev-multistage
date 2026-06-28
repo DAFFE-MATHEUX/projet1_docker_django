@@ -4,7 +4,7 @@
 
 # Utilise l'image officielle Python 3.11 version Slim.
 # Cette image contient déjà Python et pip.
-FROM python:3.11-slim AS build
+FROM python:3.12-slim AS build
 
 # Définit le dossier de travail à l'intérieur du conteneur.
 # Toutes les commandes suivantes seront exécutées dans /app.
@@ -32,7 +32,7 @@ COPY . .
 
 # Utilise de nouveau une image Python légère.
 # Cette image servira uniquement à exécuter l'application.
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 # Définit le dossier de travail.
 WORKDIR /app
